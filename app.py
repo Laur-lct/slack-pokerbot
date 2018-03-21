@@ -183,7 +183,7 @@ def lambda_response(body, code=200):
 	resp['isBase64Encoded'] = False
 	resp['statusCode'] = code
 	resp['headers'] = {}
-	resp['body'] = body
+	resp['body'] = json.dumps(body)
 	return resp
 		
 		
