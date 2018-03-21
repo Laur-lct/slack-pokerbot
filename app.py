@@ -77,7 +77,7 @@ def lambda_handler(event, context):
         message = Message('*The poker planning game has started.*')
         message.add_attachment('Vote by typing */pokerbot vote <number>*.', None, COMPOSITE_IMAGE)
 
-        return message.get_message()
+        return lambda_response(message.get_message())
 
     elif sub_command == 'vote':
         if (post_data['team_id'] not in poker_data.keys() or
@@ -131,7 +131,7 @@ def lambda_handler(event, context):
         else:
             message = Message('%s have voted.' % ', '.join(sorted(names)))
 
-        return message.get_message()
+        return lambda_response(message.get_message())
 
     elif sub_command == 'reveal':
         if (post_data['team_id'] not in poker_data.keys() or
@@ -158,14 +158,14 @@ def lambda_handler(event, context):
             message = Message('*Congratulations!*')
             message.add_attachment('Everyone selected the same number.', 'good', VALID_VOTES.get(vote_set.pop()))
 
-            return message.get_message()
+            return lambda_response(message.get_message())
         else:
             message = Message('*No winner yet.* Discuss and continue voting.')
 
             for vote in votes:
                 message.add_attachment(", ".join(votes[vote]), 'warning', VALID_VOTES[vote], True)
 
-            return message.get_message()
+            return lambda_response(message.get_message())
     elif sub_command == 'help':
         return create_ephemeral('Pokerbot helps you play Agile/Scrum poker planning.\n\n' +
                               'Use the following commands:\n' +
@@ -177,6 +177,16 @@ def lambda_handler(event, context):
     else:
         return create_ephemeral('Invalid command. Type */pokerbot help* for pokerbot commands.')
 
+
+def lambda_response(body, code=200):
+	resp = {}
+	resp['isBase64Encoded'] = False
+	resp['statusCode'] = code
+	resp['headers'] = {}
+	resp['body'] = body
+	return resp
+		
+		
 def create_ephemeral(text):
     """Send private response to user initiating action
 
@@ -185,7 +195,7 @@ def create_ephemeral(text):
     message = {}
     message['text'] = text
 
-    return message
+    return lambda_response(message)
 
 def send_delayed_message(url, message):
     """Send a delayed in_channel message.
